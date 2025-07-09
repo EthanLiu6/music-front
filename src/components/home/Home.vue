@@ -5,20 +5,55 @@ export default {
   data(){
     return{
       imageUrl,
-      //测试数据而已
-      tableData:[
-        {
-          username: 'jack',
-          date: '2025-05-05',
-          operation: '注册',
-        },
-        {
-          username: 'jack',
-          date: '2025-05-05',
-          operation: '冻结tom的账户',
-        },
-      ]
+      userCount: 0,
+      singerCount: 0,
+      musicCount: 0,
+      tableData: [],
+      greeting: '',
     }
+  },
+  created() {
+    // 根据当前时间设置问候语
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      this.greeting = '早上好';
+    } else if (hour < 18) {
+      this.greeting = '下午好';
+    } else {
+      this.greeting = '晚上好';
+    }
+    // 获取首页统计数据和日志
+    this.fetchHomeData();
+  },
+  methods: {
+    async fetchHomeData() {
+      // 假设后端接口为 /api/home/statistics，返回结构如下：
+      // { userCount: 120, singerCount: 40, musicCount: 210, logsList: [{username, date, operation}, ...] }
+      try {
+        const res = await fetch('/api/home/statistics');
+        const result = await res.json();
+        if (result.code === 20000 && result.data) {
+          this.userCount = result.data.userCount;
+          this.singerCount = result.data.singerCount;
+          this.musicCount = result.data.musicCount;
+          // 适配后端logList字段
+          this.tableData = result.data.logList || [];
+        } else {
+          this.userCount = 0;
+          this.singerCount = 0;
+          this.musicCount = 0;
+          this.tableData = [];
+        }
+      } catch (e) {
+        // 可根据需要处理异常
+        this.userCount = 0;
+        this.singerCount = 0;
+        this.musicCount = 0;
+        this.tableData = [];
+      }
+    },
+    handleSizeChange() {},
+    handleCurrentChange() {},
   }
 }
 </script>
@@ -33,32 +68,35 @@ export default {
         <div class="big_image">
           <el-image style="width: 60px; height: 60px" :src="imageUrl" fit="fit" />
         </div>
-        <div class="welcome"><span>早上好</span><br><span>Hi,欢迎回来</span></div>
+        <div class="welcome">
+          <span>{{ greeting }}</span><br>
+          <span>Hi～～～欢迎来到Fright For Dream开发的享悦音乐</span>
+        </div>
       </el-space>
     </div>
     <el-row class="cards" justify="space-evenly">
        <el-col :span="6">
          <el-card style="height: 80px">
-           <div>用户数量<br/><span>120</span></div>
+           <div>用户数量<br/><span>{{ userCount }}</span></div>
          </el-card>
        </el-col>
         <el-col :span="6">
           <el-card style="height: 80px">
-            <div>歌手数量<br/><span>40</span></div>
+            <div>歌手数量<br/><span>{{ singerCount }}</span></div>
           </el-card>
         </el-col>
         <el-col :span="6">
           <el-card style="height: 80px">
-            <div>歌曲数量<br/><span>210</span></div>
+            <div>歌曲数量<br/><span>{{ musicCount }}</span></div>
           </el-card>
         </el-col>
     </el-row>
     <div class="log">
       <h4>日志</h4>
       <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="username" label="用户" width="180" />
-        <el-table-column prop="operation" label="操作" width="180" />
-        <el-table-column prop="date" label="时间" />
+        <el-table-column prop="userName" label="用户" width="180" />
+        <el-table-column prop="doSome" label="操作" width="180" />
+        <el-table-column prop="createDate" label="时间" />
       </el-table>
       <div class="page">
         <el-pagination
