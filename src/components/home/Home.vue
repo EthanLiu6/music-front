@@ -4,10 +4,11 @@ export default {
   name: "Home",
   data(){
     return{
-      imageUrl,
+      imageUrl, // 默认图片
       userCount: 0,
       singerCount: 0,
       musicCount: 0,
+      adminImageUrl: '', // 新增：管理员图片
       tableData: [],
       greeting: '',
     }
@@ -27,8 +28,6 @@ export default {
   },
   methods: {
     async fetchHomeData() {
-      // 假设后端接口为 /api/home/statistics，返回结构如下：
-      // { userCount: 120, singerCount: 40, musicCount: 210, logsList: [{username, date, operation}, ...] }
       try {
         const res = await fetch('/api/home/statistics');
         const result = await res.json();
@@ -36,20 +35,20 @@ export default {
           this.userCount = result.data.userCount;
           this.singerCount = result.data.singerCount;
           this.musicCount = result.data.musicCount;
-          // 适配后端logList字段
-          this.tableData = result.data.logList || [];
+          // 如果adminImageUrl为null或空，则使用默认图片
+          this.adminImageUrl = result.data.adminImageUrl ? result.data.adminImageUrl : imageUrl;
         } else {
           this.userCount = 0;
           this.singerCount = 0;
           this.musicCount = 0;
-          this.tableData = [];
+          this.adminImageUrl = imageUrl;
         }
       } catch (e) {
         // 可根据需要处理异常
         this.userCount = 0;
         this.singerCount = 0;
         this.musicCount = 0;
-        this.tableData = [];
+        this.adminImageUrl = imageUrl;
       }
     },
     handleSizeChange() {},
@@ -66,7 +65,7 @@ export default {
       </el-breadcrumb>
       <el-space :size="20">
         <div class="big_image">
-          <el-image style="width: 60px; height: 60px" :src="imageUrl" fit="fit" />
+          <el-image style="width: 60px; height: 60px" :src="adminImageUrl || imageUrl" fit="fit" />
         </div>
         <div class="welcome">
           <span>{{ greeting }}</span><br>
